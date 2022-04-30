@@ -1,16 +1,23 @@
+using Microsoft.Extensions.DependencyInjection;
+using ProjectUsingsUsage.Setup;
+
 namespace ProjectUsingsUsage;
 
 internal static class Program
 {
-    /// <summary>
-    ///     The main entry point for the application.
-    /// </summary>
     [STAThread]
     private static void Main()
     {
-        // To customize application configuration such as set high DPI settings or default font,
-        // see https://aka.ms/applicationconfiguration.
-        ApplicationConfiguration.Initialize();
-        Application.Run(new MainForm());
+        Application.SetHighDpiMode(HighDpiMode.SystemAware);
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+
+        var services = new ServiceCollection();
+        services.ConfigureAppServices();
+        using var serviceProvider = services.BuildServiceProvider();
+
+        var form1 = serviceProvider.GetRequiredService<MainForm>();
+
+        Application.Run(form1);
     }
 }

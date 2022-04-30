@@ -47,7 +47,7 @@ public class AnalyzeUsingsQueryHandler
                 FileCount = x.Count(),
                 ProjectFileCount = projectFileCount,
                 Percentage = float.Parse($"{x.Count() / (float)projectFileCount * 100:f2}"),
-                Files = x.Select(x => x.FileName).OrderBy(x => x).ToList()
+                Files = x.Select(f => f.FileName).OrderBy(f => f).ToList()
             }).OrderByDescending(x => x.FileCount).ToList();
 
         return usingDistribution;
