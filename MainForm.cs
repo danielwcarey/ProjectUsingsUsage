@@ -1,13 +1,17 @@
 using Microsoft.Build.Locator;
+using ProjectUsingsUsage.Cqrs;
 using ProjectUsingsUsage.Cqrs.Query;
 
 namespace ProjectUsingsUsage;
 
 public partial class MainForm : Form
 {
-    public MainForm()
+    private AnyCommandOrQueryProcessor _commandOrQueryProcessor;
+
+    public MainForm(AnyCommandOrQueryProcessor commandOrQueryProcessor)
     {
         InitializeComponent();
+        _commandOrQueryProcessor = commandOrQueryProcessor;
     }
 
     private void MainForm_Load(object sender, EventArgs e)
@@ -26,24 +30,20 @@ public partial class MainForm : Form
         SelectProjectButton.Enabled = enabled;
     }
 
-    public void RefreshVisualStudioInstancesList()
+    public async void RefreshVisualStudioInstancesList()
     {
-        var handler = new VisualStudioInstancesQueryHandler();
-
-        VisualStudioInstancesComboBox.DataSource = handler.Handle(new VisualStudioInstancesQuery());
+        VisualStudioInstancesComboBox.DataSource = await _commandOrQueryProcessor.ProcessAsync(new VisualStudioInstancesQuery());
     }
 
     public async Task SelectProjectAsync()
     {
-        var handler = new SelectProjectQueryHandler();
+        var result = await _commandOrQueryProcessor.ProcessAsync(new SelectProjectQuery());
 
-        var result = handler.Handle(new SelectProjectQuery());
+        if (!result.Success)
+            return;
 
-        if (result.Success)
-        {
-            MicrosoftBuildProjectTextBox.Text = result.Path;
-            await AnalyzeUsingsAsync();
-        }
+        MicrosoftBuildProjectTextBox.Text = result.Path;
+        await AnalyzeUsingsAsync();
     }
 
     public async Task AnalyzeUsingsAsync()
@@ -61,18 +61,13 @@ public partial class MainForm : Form
             MSBuildLocator.RegisterInstance(selectInstance);
         }
 
-        var handler = new AnalyzeUsingsQueryHandler();
-
-        var result = await handler.HandleAsync(new AnalyzeUsingsQuery
+        UsingsDataGridView.DataSource = await _commandOrQueryProcessor.ProcessAsync(new AnalyzeUsingsQuery
         {
             Path = MicrosoftBuildProjectTextBox.Text
-        });
-
-        UsingsDataGridView.DataSource = result;
+        }); 
         SetInput(true);
     }
-
-
+    
     private void OnRefreshListButton_Click(object sender, EventArgs e)
     {
         RefreshVisualStudioInstancesList();

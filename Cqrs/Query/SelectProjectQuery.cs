@@ -11,17 +11,17 @@ public class SelectProjectQueryResult
 
 public class SelectProjectQueryHandler
 {
-    public SelectProjectQueryResult Handle(SelectProjectQuery query)
+    public Task<SelectProjectQueryResult> HandleAsync(SelectProjectQuery query)
     {
         var dialog = new OpenFileDialog
         {
-            Title = "Project Selector",
-            Filter = "C# Project (*.csproj)|*.csproj|F# Project (*.fsproj)|*.fsproj|All Files (*.*)|*.*"
+            Title = @"Project Selector",
+            Filter = @"C# Project (*.csproj)|*.csproj|F# Project (*.fsproj)|*.fsproj|All Files (*.*)|*.*"
         };
 
         if (dialog.ShowDialog() != DialogResult.OK)
-            return new SelectProjectQueryResult { Success = false };
+            return Task.FromResult(new SelectProjectQueryResult { Success = false });
 
-        return new SelectProjectQueryResult { Success = true, Path = dialog.FileName };
+        return Task.FromResult(new SelectProjectQueryResult { Success = true, Path = dialog.FileName });
     }
 }
